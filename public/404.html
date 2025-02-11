@@ -1,0 +1,11 @@
+<!doctype html>
+<html>
+<head>
+  <!-- Workaround for GitHub Pages not supporting SPA routing -->
+  <script>
+    sessionStorage.redirect = location.href;
+    const url = window.location.hostname.includes('.github.io') ? '/gh-dashboard/' : '/';
+    window.location.replace(url);
+  </script>
+</head>
+</html>
