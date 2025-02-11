@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
-import { GitHubService } from './github.service';
+import { ReposService } from './repos.service';
 
 @Component({
   standalone: true,
@@ -56,16 +56,12 @@ export class ReposComponent {
   readonly repos = signal<any[]>([]);
   readonly displayedColumns = ['name', 'openIssues', 'openPRs', 'securityIssues', 'technologies', 'lastCommitDate'];
 
-  constructor(private github: GitHubService) {
+  constructor(private reposService: ReposService) {
     this.loadRepos();
   }
 
   async loadRepos() {
-    const repoList = await fetch('repo.txt').then(r => r.text());
-    const lines = repoList.split('\n').filter(l => l.trim());
-    const repoData = await Promise.all(
-      lines.map(url => this.github.getRepoInfo(url))
-    );
+    const repoData = await this.reposService.getRepoInfos();
     this.repos.set(repoData);
   }
 }
