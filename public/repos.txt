@@ -1,0 +1,6 @@
+https://github.com/Azure-Samples/serverless-chat-langchainjs
+https://github.com/Azure-Samples/deepseek-azure-javascript
+https://github.com/Azure-Samples/deepseek-js
+https://github.com/sinedied/azure-checkin/
+https://github.com/microsoft/moaw
+https://github.com/Azure-Samples/azure-search-openai-javascript
