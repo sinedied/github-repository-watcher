@@ -27,7 +27,7 @@ import { RepoInfo, ReposService } from './repos.service';
     </mat-form-field>
 
     <table mat-table [dataSource]="dataSource" matSort>
-      <ng-container matColumnDef="name">
+      <ng-container matColumnDef="name" sticky="true">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
         <td mat-cell *matCellDef="let repo">
           <a mat-button [href]="getBaseUrl(repo)" target="_blank">{{repo.name}}</a>
@@ -120,6 +120,10 @@ import { RepoInfo, ReposService } from './repos.service';
     .mat-mdc-form-field {
       width: 100%;
       font-size: 14px;
+    }
+    .mat-mdc-table-sticky {
+      background: #fff;
+      opacity: 1;
     }
   `]
 })
