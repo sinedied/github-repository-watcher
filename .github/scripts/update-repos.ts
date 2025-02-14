@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * This script fetches data about the repositories listed in `data/repos.txt`
+ * This script fetches data about the repositories listed in `data/repos.md`
  * and saves it to `data/repos.json`.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -13,7 +13,7 @@ dotenv.config({ override: true });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const REPOS_LIST = path.join(__dirname, '..', '..', 'data', 'repos.txt');
+const REPOS_LIST = path.join(__dirname, '..', '..', 'data', 'repos.md');
 const OUTPUT_FILE = path.join(__dirname, '..', '..', 'data', 'repos.json');
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -29,6 +29,11 @@ async function getRepoInfo(repoUrl) {
     octokit.rest.secretScanning.listAlertsForRepo({ owner, repo, state: 'open' }).catch(() => {}),
     octokit.rest.repos.listLanguages({ owner, repo })
   ]);
+
+  const q = `repo:${repoData.data.full_name} filename:package.json`;
+  const test = await octokit.rest.search.code({ q });
+  console.log(q)
+  console.log(test.data);
 
   return {
     name: repoData.data.full_name,
@@ -51,10 +56,15 @@ async function getRepoInfo(repoUrl) {
 
 async function main() {
   const reposFile = readFileSync(REPOS_LIST, 'utf8');
-  const repos = reposFile.split('\n').filter(line => line?.trim());
+  const repos = reposFile
+    .split('\n')
+    .map(line => line?.trim())
+    .filter(line => line && line.startsWith('http'));
+  console.log(`Found ${repos.length} repositories in ${REPOS_LIST}`);
+  const first = [repos[0]];
   
   const reposData = await Promise.all(
-    repos.map(async (repo) => {
+    first.map(async (repo) => {
       try {
         return await getRepoInfo(repo.trim());
       } catch (error) {
