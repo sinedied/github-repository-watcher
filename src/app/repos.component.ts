@@ -55,13 +55,13 @@ import { RepoInfo, ReposService } from './repos.service';
             <a mat-button color="warn" [href]="getAdvisoriesUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.advisories > 0">
               Advisories ({{repo.securityAlerts.advisories}})
             </a>
-            <a mat-button color="warn" [href]="getDependabotUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.dependabot === 'disabled' || repo.securityAlerts.dependabot > 0">
+            <a mat-button color="warn" [href]="getDependabotUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.dependabot !== 'disabled' || repo.securityAlerts.dependabot > 0">
               Dependabot ({{repo.securityAlerts.dependabot}})
             </a>
-            <a mat-button color="warn" [href]="getCodeScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.codeScanning === 'disabled' || repo.securityAlerts.codeScanning > 0">
+            <a mat-button color="warn" [href]="getCodeScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.codeScanning !== 'disabled' || repo.securityAlerts.codeScanning > 0">
               Code ({{repo.securityAlerts.codeScanning}})
             </a>
-            <a mat-button color="warn" [href]="getSecretScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.secretScanning === 'disabled' || repo.securityAlerts.secretScanning > 0">
+            <a mat-button color="warn" [href]="getSecretScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.secretScanning !== 'disabled' || repo.securityAlerts.secretScanning > 0">
               Secret ({{repo.securityAlerts.secretScanning}})
             </a>
           </div>
