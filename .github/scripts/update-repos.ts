@@ -157,16 +157,17 @@ async function getRepoInfo(repoUrl: string): Promise<RepoInfo> {
 }
 
 async function getReposInfo(repos: string[]): Promise<RepoInfo[]> {
-  return Promise.all(
-    repos.map(async (repo) => {
-      try {
-        return await getRepoInfo(repo.trim());
-      } catch (error) {
-        console.error(`Error fetching data for ${repo}:`, error);
-        process.exit(1);
-      }
-    })
-  );
+  const results: RepoInfo[] = [];
+  for (const repo of repos) {
+    try {
+      const info = await getRepoInfo(repo.trim());
+      results.push(info);
+    } catch (error) {
+      console.error(`Error fetching data for ${repo}:`, error);
+      process.exit(1);
+    }
+  }
+  return results;
 }
 
 async function main() {
