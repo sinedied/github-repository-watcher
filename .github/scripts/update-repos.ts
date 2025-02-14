@@ -9,37 +9,135 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { Octokit } from 'octokit';
 import dotenv from 'dotenv';
+import semver from 'semver';
 
 dotenv.config({ override: true });
+
+export interface RepoInfo {
+  name: string;
+  description: string;
+  topics: string[];
+  languages: string[];
+  stars: number;
+  forks: number;
+  openIssues: number;
+  openPullRequests: number;
+  securityAlerts: {
+    advisories: number;
+    dependabot?: number;
+    codeScanning?: number;
+    secretScanning?: number;
+  };
+  lastCommitDate: string;
+  packageVersions: Record<string, string>;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const REPOS_LIST = path.join(__dirname, '..', '..', 'data', 'repos.md');
 const OUTPUT_FILE = path.join(__dirname, '..', '..', 'data', 'repos.json');
+const PACKAGES = {
+  '@angular/core': 'Angular',
+  'react': 'React',
+  'vue': 'Vue',
+  'svelte': 'Svelte',
+  'lit': 'Lit',
+  'typescript': 'TypeScript',
+  '@azure/functions': 'Functions',
+  'langchain': 'LangChain.js',
+  'fastify': 'Fastify',
+};
+
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-async function getRepoInfo(repoUrl: string) {
+const parseRepoUrl = (repoUrl: string) => repoUrl.replace('https://github.com/', '').split('/');
+
+async function getPackageVersions(repoUrl: string) {
+  const [owner, repo] = parseRepoUrl(repoUrl);
+  const q = `filename:package.json repo:${owner}/${repo}`;
+  const packageFiles = await octokit.rest.search.code({ q });
+
+  const versions = await Promise.all(
+    packageFiles.data.items.map(async (file) => {
+      const content = await octokit.rest.repos.getContent({
+        owner,
+        repo,
+        path: file.path,
+      });
+
+      
+      // Skip if content is not a file or doesn't have content
+      if (!('content' in content.data)) {
+        return {};
+      }
+      
+      try {
+        const decoded = Buffer.from(content.data.content, 'base64').toString();
+        const packageJson = JSON.parse(decoded);
+        const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+        
+        return Object.entries(deps)
+          .filter(([name]) => name in PACKAGES)
+          .reduce((acc, [name, version]) => {
+            const displayName = PACKAGES[name as keyof typeof PACKAGES];
+            if (!acc[displayName] || semver.lt(version, acc[displayName])) {
+              acc[displayName] = version;
+            }
+            return acc;
+          }, {});
+      } catch (error) {
+        console.warn(`Error parsing package.json in ${file.path}:`, error);
+        return {};
+      }
+    })
+  );
+
+  // Merge all found versions, taking the lowest occurrence of each package
+  const mergedVersions = versions.reduce((acc, curr) => {
+    Object.entries(curr).forEach(([name, version]) => {
+      if (!acc[name] || semver.lt(version, acc[name])) {
+        acc[name] = version;
+      }
+    });
+    return acc;
+  }, {});
+
+  // Prettify the versions
+  const prettifiedVersions = Object.entries(mergedVersions).reduce((acc, [name, version]) => {
+    const coercedVersion = semver.coerce(version);
+    if (coercedVersion) {
+      if (coercedVersion.major > 0) {
+        acc[name] = `${coercedVersion.major}`;
+      } else if (coercedVersion.minor > 0) {
+        acc[name] = `${coercedVersion.major}.${coercedVersion.minor}`;
+      } else {
+        acc[name] = `${coercedVersion.major}.${coercedVersion.minor}.${coercedVersion.patch}`;
+      }
+    }
+    return acc;
+  }, {});
+
+  return prettifiedVersions;
+}
+
+async function getRepoInfo(repoUrl: string): Promise<RepoInfo> {
   console.log(`Fetching data for ${repoUrl}...`);
-  const [owner, repo] = repoUrl.replace('https://github.com/', '').split('/');
-  const [repoData, pulls, securityAdvisories, dependabotAlerts, codeScanningAlerts, secretScanningAlerts, languages] = await Promise.all([
+  const [owner, repo] = parseRepoUrl(repoUrl);
+  const [repoData, pulls, securityAdvisories, dependabotAlerts, codeScanningAlerts, secretScanningAlerts, languages, packageVersions] = await Promise.all([
     octokit.rest.repos.get({ owner, repo }),
     octokit.rest.pulls.list({ owner, repo, state: 'open' }),
     octokit.rest.securityAdvisories.listRepositoryAdvisories({ owner, repo }),
     octokit.rest.dependabot.listAlertsForRepo({ owner, repo, state: 'open' }).catch(() => {}),
     octokit.rest.codeScanning.listAlertsForRepo({ owner, repo, state: 'open' }).catch(() => {}),
     octokit.rest.secretScanning.listAlertsForRepo({ owner, repo, state: 'open' }).catch(() => {}),
-    octokit.rest.repos.listLanguages({ owner, repo })
+    octokit.rest.repos.listLanguages({ owner, repo }),
+    getPackageVersions(repoUrl)
   ]);
-
-  const q = `repo:${repoData.data.full_name} filename:package.json`;
-  const test = await octokit.rest.search.code({ q });
-  console.log(q)
-  console.log(test.data);
 
   return {
     name: repoData.data.full_name,
-    description: repoData.data.description,
-    topics: repoData.data.topics,
+    description: repoData.data.description ?? '',
+    topics: repoData.data.topics ?? [],
     languages: Object.keys(languages.data),
     stars: repoData.data.stargazers_count,
     forks: repoData.data.forks_count,
@@ -51,11 +149,12 @@ async function getRepoInfo(repoUrl: string) {
       codeScanning: codeScanningAlerts?.data.length,
       secretScanning: secretScanningAlerts?.data.length
     },
-    lastCommitDate: repoData.data.pushed_at
+    lastCommitDate: repoData.data.pushed_at,
+    packageVersions,
   };
 }
 
-async function getReposInfo(repos: string[]) {
+async function getReposInfo(repos: string[]): Promise<RepoInfo[]> {
   return Promise.all(
     repos.map(async (repo) => {
       try {
