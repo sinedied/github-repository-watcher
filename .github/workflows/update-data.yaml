@@ -21,7 +21,7 @@ jobs:
       - name: Update repository data
         run: npm run update:repos
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SCAN_TOKEN }}
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
