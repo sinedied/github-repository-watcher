@@ -2,6 +2,7 @@
 /*
  * This script fetches data about the repositories listed in `data/repos.md`
  * and saves it to `data/repos.json`.
+ * Usage: `tsx .github/scripts/update-repos.ts [<partial-repo-name>]`
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +18,7 @@ const REPOS_LIST = path.join(__dirname, '..', '..', 'data', 'repos.md');
 const OUTPUT_FILE = path.join(__dirname, '..', '..', 'data', 'repos.json');
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-async function getRepoInfo(repoUrl) {
+async function getRepoInfo(repoUrl: string) {
   console.log(`Fetching data for ${repoUrl}...`);
   const [owner, repo] = repoUrl.replace('https://github.com/', '').split('/');
   const [repoData, pulls, securityAdvisories, dependabotAlerts, codeScanningAlerts, secretScanningAlerts, languages] = await Promise.all([
@@ -54,17 +55,9 @@ async function getRepoInfo(repoUrl) {
   };
 }
 
-async function main() {
-  const reposFile = readFileSync(REPOS_LIST, 'utf8');
-  const repos = reposFile
-    .split('\n')
-    .map(line => line?.trim())
-    .filter(line => line && line.startsWith('http'));
-  console.log(`Found ${repos.length} repositories in ${REPOS_LIST}`);
-  const first = [repos[0]];
-  
-  const reposData = await Promise.all(
-    first.map(async (repo) => {
+async function getReposInfo(repos: string[]) {
+  return Promise.all(
+    repos.map(async (repo) => {
       try {
         return await getRepoInfo(repo.trim());
       } catch (error) {
@@ -73,6 +66,19 @@ async function main() {
       }
     })
   );
+}
+
+async function main() {
+  const partialRepoName = process.argv[2] ?? '';
+  const reposFile = readFileSync(REPOS_LIST, 'utf8');
+  const repos = reposFile
+    .split('\n')
+    .map(line => line?.trim())
+    .filter(line => line && line.startsWith('http'))
+    .filter(line => !partialRepoName || line.includes(partialRepoName));
+
+  console.log(`Found ${repos.length} repositories in ${REPOS_LIST}`);
+  const reposData = await getReposInfo(repos);
 
   console.log(`Writing data to ${OUTPUT_FILE} for ${reposData.length} repositories...`);
   writeFileSync(OUTPUT_FILE, JSON.stringify(reposData, null, 2));
