@@ -30,21 +30,21 @@ import { RepoInfo, ReposService } from './repos.service';
       <ng-container matColumnDef="name" sticky="true">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
         <td mat-cell *matCellDef="let repo">
-          <a mat-button [href]="getBaseUrl(repo)" target="_blank">{{repo.name}}</a>
+          <a class="link" [href]="getBaseUrl(repo)" target="_blank">{{repo.name}}</a>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="openIssues">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Issues</th>
         <td mat-cell *matCellDef="let repo">
-          <a mat-button [href]="getIssuesUrl(repo)" target="_blank">{{repo.openIssues}}</a>
+          <a class="link" [href]="getIssuesUrl(repo)" target="_blank">{{repo.openIssues}}</a>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="openPRs">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>PRs</th>
         <td mat-cell *matCellDef="let repo">
-          <a mat-button [href]="getPullRequestsUrl(repo)" target="_blank">{{repo.openPullRequests}}</a>
+          <a class="link" [href]="getPullRequestsUrl(repo)" target="_blank">{{repo.openPullRequests}}</a>
         </td>
       </ng-container>
 
@@ -52,17 +52,17 @@ import { RepoInfo, ReposService } from './repos.service';
         <th mat-header-cell *matHeaderCellDef>Security</th>
         <td mat-cell *matCellDef="let repo">
           <div class="security-buttons">
-            <a mat-button color="warn" [href]="getAdvisoriesUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.advisories > 0">
-              Advisories ({{repo.securityAlerts.advisories}})
+            <a class="link" [href]="getAdvisoriesUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.advisories > 0">
+              Advisories: {{repo.securityAlerts.advisories}}
             </a>
-            <a mat-button color="warn" [href]="getDependabotUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.dependabot !== 'disabled' || repo.securityAlerts.dependabot > 0">
-              Dependabot ({{repo.securityAlerts.dependabot}})
+            <a class="link" [href]="getDependabotUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.dependabot > 0">
+              Dependabot: {{repo.securityAlerts.dependabot}}
             </a>
-            <a mat-button color="warn" [href]="getCodeScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.codeScanning !== 'disabled' || repo.securityAlerts.codeScanning > 0">
-              Code ({{repo.securityAlerts.codeScanning}})
+            <a class="link warning" [href]="getCodeScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.codeScanning > 0">
+              Code: {{repo.securityAlerts.codeScanning}}
             </a>
-            <a mat-button color="warn" [href]="getSecretScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.secretScanning !== 'disabled' || repo.securityAlerts.secretScanning > 0">
-              Secret ({{repo.securityAlerts.secretScanning}})
+            <a class="link error" [href]="getSecretScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.secretScanning > 0">
+              Secret: {{repo.securityAlerts.secretScanning}}
             </a>
           </div>
         </td>
@@ -100,7 +100,7 @@ import { RepoInfo, ReposService } from './repos.service';
     }
     .security-buttons .mdc-button {
       padding: 0 8px;
-      font-size: 12px;
+      font-size: var(--mat-sys-body-small);
       height: 16px;
       white-space: nowrap;
     }
@@ -124,6 +124,23 @@ import { RepoInfo, ReposService } from './repos.service';
     .mat-mdc-table-sticky {
       background: #fff;
       opacity: 1;
+    }
+    .link {
+      color: var(--mat-table-row-item-label-text-color, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
+      text-decoration: none;
+      font-weight: 500;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .error {
+      color: var(--mat-sys-error);
+    }
+    .warning {
+      // darker orange
+      color: #f57c00;
     }
   `]
 })
