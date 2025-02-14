@@ -40,5 +40,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Other
+/data/repos.json
 TODO
 .env*

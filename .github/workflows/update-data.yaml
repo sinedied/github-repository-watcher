@@ -27,6 +27,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Bot"
           git checkout -b data
-          git add data/repos.json
+          git add -f data/repos.json
           git commit -m "chore: update repository data" || exit 0
           git push -u origin data --force
