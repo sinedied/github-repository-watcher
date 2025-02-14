@@ -80,8 +80,9 @@ async function getPackageVersions(repoUrl: string) {
           .filter(([name]) => name in PACKAGES)
           .reduce((acc, [name, version]) => {
             const displayName = PACKAGES[name as keyof typeof PACKAGES];
-            if (!acc[displayName] || semver.lt(version, acc[displayName])) {
-              acc[displayName] = version;
+            const coercedVersion = semver.coerce(version);
+            if (!acc[displayName] || semver.lt(coercedVersion, acc[displayName])) {
+              acc[displayName] = coercedVersion;
             }
             return acc;
           }, {});
@@ -95,8 +96,9 @@ async function getPackageVersions(repoUrl: string) {
   // Merge all found versions, taking the lowest occurrence of each package
   const mergedVersions = versions.reduce((acc, curr) => {
     Object.entries(curr).forEach(([name, version]) => {
-      if (!acc[name] || semver.lt(version, acc[name])) {
-        acc[name] = version;
+      const coercedVersion = semver.coerce(version);
+      if (!acc[name] || semver.lt(coercedVersion, acc[name])) {
+        acc[name] = coercedVersion;
       }
     });
     return acc;
