@@ -2,7 +2,7 @@
 https://github.com/microsoft/generative-ai-with-javascript
 https://github.com/Azure-Samples/serverless-chat-langchainjs
 https://github.com/Azure-Samples/langchainjs-quickstart-demo
-https://github.com/Azure-Samples/serverless-recipes-javascript
+<!-- https://github.com/Azure-Samples/serverless-recipes-javascript -->
 
 
 ## Maintained samples
