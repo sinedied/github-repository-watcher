@@ -15,6 +15,10 @@ https://github.com/Azure-Samples/github-models-javascript-playground
 https://github.com/Azure-Samples/ollama-javascript-playground
 https://github.com/Azure-Samples/openai-langchainjs
 https://github.com/Azure-Samples/openai-secure-ui-js
+https://github.com/Azure-Samples/genai-gateway-apim
+https://github.com/Azure-Samples/llama-index-javascript
+https://github.com/Azure-Samples/azure-openai-assistant-javascript
+https://github.com/Azure-Samples/llama-index-azure-code-interpreter
 
 
 ## Samples w/ workshop
@@ -25,6 +29,7 @@ https://github.com/Azure-Samples/copilot-nodejs-todo
 
 ## Outdated samples
 https://github.com/Azure-Samples/contoso-real-estate
+https://github.com/Azure-Samples/azure-openai-chat-frontend
 
 
 ## Other repos
