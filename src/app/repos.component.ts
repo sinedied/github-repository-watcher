@@ -19,7 +19,7 @@ import { RepoInfo, ReposService } from './repos.service';
     MatSortModule
   ],
   template: `
-    <h2>Repositories: {{repos().length}}</h2>
+    <h2>Repositories: {{filteredReposCount()}}</h2>
 
     <mat-form-field>
       <mat-label>Filter</mat-label>
@@ -146,6 +146,7 @@ import { RepoInfo, ReposService } from './repos.service';
 })
 export class ReposComponent {
   readonly repos = signal<RepoInfo[]>([]);
+  readonly filteredReposCount = signal<number>(0);
   readonly displayedColumns = ['name', 'openIssues', 'openPRs', 'securityIssues', 'versions', 'lastCommitDate'];
   dataSource: MatTableDataSource<RepoInfo>;
 
@@ -153,19 +154,29 @@ export class ReposComponent {
 
   constructor(private reposService: ReposService) {
     this.dataSource = new MatTableDataSource<RepoInfo>([]);
-    this.dataSource.sortingDataAccessor = (repo: RepoInfo, columnDef: string) => {
-      switch (columnDef) {
-        case 'openIssues':
-          return repo.openIssues;
-        case 'openPRs':
-          return repo.openPullRequests;
-        case 'lastCommitDate':
-          return new Date(repo.lastCommitDate).getTime();
-        default:
-          return (repo as any)[columnDef];
-      }
-    };
+    this.dataSource.sortingDataAccessor = this.getSortingValue.bind(this);
+    this.dataSource.filterPredicate = this.filterPredicate.bind(this);
     this.loadRepos();
+  }
+
+  private getSortingValue(repo: RepoInfo, columnDef: string): string | number {
+    switch (columnDef) {
+      case 'openIssues':
+        return repo.openIssues;
+      case 'openPRs':
+        return repo.openPullRequests;
+      case 'lastCommitDate':
+        return new Date(repo.lastCommitDate).getTime();
+      default:
+        return (repo as any)[columnDef];
+    }
+  }
+
+  filterPredicate(data: RepoInfo, filter: string): boolean {
+    const searchStr = data.name.toLowerCase();
+    const packageVersionsStr = Object.keys(data.packageVersions).join(' ').toLowerCase();
+    const transformedFilter = filter.toLowerCase();
+    return searchStr.includes(transformedFilter) || packageVersionsStr.includes(transformedFilter);
   }
 
   async loadRepos() {
@@ -173,11 +184,13 @@ export class ReposComponent {
     this.repos.set(repoData);
     this.dataSource.data = repoData;
     this.dataSource.sort = this.sort;
+    this.filteredReposCount.set(repoData.length);
   }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.filteredReposCount.set(this.dataSource.filteredData.length);
   }
 
   getBaseUrl(repo: RepoInfo): string {
