@@ -150,9 +150,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
       // darker orange
       color: #f57c00;
     }
-    .spacer {
-      flex: 1 1 auto;
-    }
   `]
 })
 export class ReposComponent {

@@ -51,9 +51,6 @@ import { octMarkGithub } from "@ng-icons/octicons";
       .title {
         margin-left: 0.5em;
       }
-      .spacer {
-        flex: 1 1 auto;
-      }
       .icon {
         display: flex;
         align-items: center;
