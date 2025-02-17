@@ -28,16 +28,6 @@ import { octMarkGithub } from "@ng-icons/octicons";
   styles: [
     `
       @use "@angular/material" as mat;
-
-      :host {
-        /* display: flex; */
-        height: 100%;
-        align-items: center;
-        flex-direction: column;
-        background: #999;
-        background-image: radial-gradient(circle at center, #999 0%, #444 100%);
-        overflow: auto;
-      }
       .toolbar-gradient {
         position: relative;
 
