@@ -12,7 +12,7 @@ import { octMarkGithub } from "@ng-icons/octicons";
   imports: [RouterOutlet, MatToolbarModule, MatButtonModule, NgIcon, MatIcon],
   providers: [provideIcons({ octMarkGithub })],
   template: `
-    <mat-toolbar>
+    <mat-toolbar class="toolbar-gradient">
       <mat-icon>mystery</mat-icon>
       <span class="title">Repository Watcher</span>
       <span class="spacer"></span>
@@ -37,6 +37,9 @@ import { octMarkGithub } from "@ng-icons/octicons";
         background: #999;
         background-image: radial-gradient(circle at center, #999 0%, #444 100%);
         overflow: auto;
+      }
+      .toolbar-gradient {
+        position: relative;
 
         @include mat.toolbar-overrides(
           (

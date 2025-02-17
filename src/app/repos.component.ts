@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { RepoInfo, ReposService } from './repos.service';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   standalone: true,
@@ -16,17 +17,17 @@ import { RepoInfo, ReposService } from './repos.service';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSortModule
+    MatSortModule,
+    MatToolbarModule
   ],
   template: `
-    <h2>Repositories: {{filteredReposCount()}}</h2>
-
-    <mat-form-field>
-      <mat-label>Filter</mat-label>
-      <input matInput (keyup)="applyFilter($event)" placeholder="Filter repositories..." #input>
+    <mat-form-field class="disable-bottom-line" subscriptSizing="dynamic">
+      <mat-label>Filter repositories</mat-label>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Partial repo or package name..." #input>
+      <span matTextSuffix>Repositories: {{filteredReposCount()}}</span>
     </mat-form-field>
 
-    <table mat-table [dataSource]="dataSource" matSort>
+    <table class="repos" mat-table [dataSource]="dataSource" matSort>
       <ng-container matColumnDef="name" sticky="true">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
         <td mat-cell *matCellDef="let repo">
@@ -78,7 +79,7 @@ import { RepoInfo, ReposService } from './repos.service';
       </ng-container>
 
       <ng-container matColumnDef="lastCommitDate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Update</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Commit</th>
         <td mat-cell *matCellDef="let repo">{{repo.lastCommitDate | date}}</td>
       </ng-container>
 
@@ -92,6 +93,9 @@ import { RepoInfo, ReposService } from './repos.service';
     </table>
   `,
   styles: [`
+  .title {
+    font-size: 1rem;
+  }
     table { width: 100%; }
     .security-buttons {
       display: flex;
@@ -117,6 +121,10 @@ import { RepoInfo, ReposService } from './repos.service';
       background: #e0e0e0;
       white-space: nowrap;
     }
+    .mat-mdc-header-row {
+      opacity: .7;
+      font-size: .75em;
+    }
     .mat-mdc-form-field {
       width: 100%;
       font-size: 14px;
@@ -141,6 +149,9 @@ import { RepoInfo, ReposService } from './repos.service';
     .warning {
       // darker orange
       color: #f57c00;
+    }
+    .spacer {
+      flex: 1 1 auto;
     }
   `]
 })
@@ -184,6 +195,10 @@ export class ReposComponent {
     this.repos.set(repoData);
     this.dataSource.data = repoData;
     this.dataSource.sort = this.sort;
+    this.sort.active = 'lastCommitDate';
+    this.sort.direction = 'asc';
+    this.dataSource.sort = this.sort;
+
     this.filteredReposCount.set(repoData.length);
   }
 
