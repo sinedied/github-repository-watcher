@@ -1,11 +1,11 @@
 {
-  "name": "gh-dashboard",
+  "name": "github-repository-watcher",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --base-href \"/gh-dashboard/\"",
+    "build": "ng build --base-href \"/github-repository-watcher/\"",
     "watch": "ng build --watch --configuration development",
     "update:repos": "tsx .github/scripts/update-repos.ts",
     "format": "prettier --write \"src/**/*.ts\""
