@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "gh-dashboard": {
+    "github-repository-watcher": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -41,7 +41,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/gh-dashboard",
+            "outputPath": "dist/github-repository-watcher",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [],
@@ -86,10 +86,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "gh-dashboard:build:production"
+              "buildTarget": "github-repository-watcher:build:production"
             },
             "development": {
-              "buildTarget": "gh-dashboard:build:development"
+              "buildTarget": "github-repository-watcher:build:development"
             }
           },
           "defaultConfiguration": "development"

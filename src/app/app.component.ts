@@ -16,7 +16,7 @@ import { octMarkGithub } from "@ng-icons/octicons";
       <mat-icon>mystery</mat-icon>
       <span class="title">Repository Watcher</span>
       <span class="spacer"></span>
-      <a mat-button href="https://github.com/sinedied/gh-dashboard" target="_blank">
+      <a mat-button href="https://github.com/sinedied/github-repository-watcher" target="_blank">
         <span class="icon">
           <ng-icon name="octMarkGithub" size="24px"></ng-icon>
           GitHub
