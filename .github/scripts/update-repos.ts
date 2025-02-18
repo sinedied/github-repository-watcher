@@ -36,17 +36,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const REPOS_LIST = path.join(__dirname, '..', '..', 'data', 'repos.md');
 const OUTPUT_FILE = path.join(__dirname, '..', '..', 'data', 'repos.json');
-const PACKAGES = {
-  '@angular/core': 'Angular',
-  'react': 'React',
-  'vue': 'Vue',
-  'svelte': 'Svelte',
-  'lit': 'Lit',
-  'typescript': 'TypeScript',
-  '@azure/functions': 'Functions',
-  'langchain': 'LangChain.js',
-  'fastify': 'Fastify',
-};
+const PACKAGES_FILE = path.join(__dirname, '..', '..', 'data', 'packages.json');
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -54,6 +44,7 @@ const parseRepoUrl = (repoUrl: string) => repoUrl.replace('https://github.com/',
 
 async function getPackageVersions(repoUrl: string) {
   const [owner, repo] = parseRepoUrl(repoUrl);
+  const watchedPackages = JSON.parse(readFileSync(PACKAGES_FILE, 'utf8'));
   const q = `filename:package.json repo:${owner}/${repo}`;
   const packageFiles = await octokit.rest.search.code({ q });
 
@@ -77,9 +68,9 @@ async function getPackageVersions(repoUrl: string) {
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
         
         return Object.entries(deps)
-          .filter(([name]) => name in PACKAGES)
+          .filter(([name]) => name in watchedPackages)
           .reduce((acc, [name, version]) => {
-            const displayName = PACKAGES[name as keyof typeof PACKAGES];
+            const displayName = watchedPackages[name as keyof typeof watchedPackages];
             const coercedVersion = semver.coerce(version);
             if (!acc[displayName] || semver.lt(coercedVersion, acc[displayName])) {
               acc[displayName] = coercedVersion;
