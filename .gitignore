@@ -43,5 +43,6 @@ Thumbs.db
 
 # Other
 /data/repos.json
+/public/repos.json
 TODO
 .env*
