@@ -17,7 +17,14 @@ export interface RepoInfo {
     secretScanning: number | 'disabled';
   };
   lastCommitDate: string;
-  packageVersions: Record<string, string>;
+  packageVersions: Record<string, VersionInfo>;
+}
+
+export interface VersionInfo {
+  short: string;
+  current: string;
+  latest: string;
+  foundInPath: string;
 }
 
 @Injectable({

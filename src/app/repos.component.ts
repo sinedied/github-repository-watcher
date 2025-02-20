@@ -18,34 +18,34 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatFormFieldModule,
     MatInputModule,
     MatSortModule,
-    MatToolbarModule
+    MatToolbarModule,
   ],
   template: `
     <mat-form-field class="disable-bottom-line" subscriptSizing="dynamic">
       <mat-label>Filter repositories</mat-label>
-      <input matInput (keyup)="applyFilter($event)" placeholder="Partial repo or package name..." #input>
-      <span matTextSuffix>Repositories: {{filteredReposCount()}}</span>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Partial repo or package name..." #input />
+      <span matTextSuffix>Repositories: {{ filteredReposCount() }}</span>
     </mat-form-field>
 
     <table class="repos" mat-table [dataSource]="dataSource" matSort>
       <ng-container matColumnDef="name" sticky="true">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
         <td mat-cell *matCellDef="let repo">
-          <a class="link" [href]="getBaseUrl(repo)" target="_blank">{{repo.name}}</a>
+          <a class="link" [href]="getBaseUrl(repo)" target="_blank">{{ repo.name }}</a>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="openIssues">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Issues</th>
         <td mat-cell *matCellDef="let repo">
-          <a class="link" [href]="getIssuesUrl(repo)" target="_blank">{{repo.openIssues}}</a>
+          <a class="link" [href]="getIssuesUrl(repo)" target="_blank">{{ repo.openIssues }}</a>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="openPRs">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>PRs</th>
         <td mat-cell *matCellDef="let repo">
-          <a class="link" [href]="getPullRequestsUrl(repo)" target="_blank">{{repo.openPullRequests}}</a>
+          <a class="link" [href]="getPullRequestsUrl(repo)" target="_blank">{{ repo.openPullRequests }}</a>
         </td>
       </ng-container>
 
@@ -54,16 +54,26 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         <td mat-cell *matCellDef="let repo">
           <div class="security-buttons">
             <a class="link" [href]="getAdvisoriesUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.advisories > 0">
-              Advisories: {{repo.securityAlerts.advisories}}
+              Advisories: {{ repo.securityAlerts.advisories }}
             </a>
             <a class="link" [href]="getDependabotUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.dependabot > 0">
-              Dependabot: {{repo.securityAlerts.dependabot}}
+              Dependabot: {{ repo.securityAlerts.dependabot }}
             </a>
-            <a class="link warning" [href]="getCodeScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.codeScanning > 0">
-              Code: {{repo.securityAlerts.codeScanning}}
+            <a
+              class="link warning"
+              [href]="getCodeScanningUrl(repo)"
+              target="_blank"
+              *ngIf="repo.securityAlerts.codeScanning > 0"
+            >
+              Code: {{ repo.securityAlerts.codeScanning }}
             </a>
-            <a class="link error" [href]="getSecretScanningUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.secretScanning > 0">
-              Secret: {{repo.securityAlerts.secretScanning}}
+            <a
+              class="link error"
+              [href]="getSecretScanningUrl(repo)"
+              target="_blank"
+              *ngIf="repo.securityAlerts.secretScanning > 0"
+            >
+              Secret: {{ repo.securityAlerts.secretScanning }}
             </a>
           </div>
         </td>
@@ -73,18 +83,18 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         <th mat-header-cell *matHeaderCellDef>Versions</th>
         <td mat-cell *matCellDef="let repo">
           <div class="version-pills">
-            <span *ngFor="let version of getPackageVersions(repo)" class="version-pill">{{version}}</span>
+            <span *ngFor="let version of getPackageVersions(repo)" class="version-pill">{{ version }}</span>
           </div>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="lastCommitDate">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Commit</th>
-        <td mat-cell *matCellDef="let repo">{{repo.lastCommitDate | date}}</td>
+        <td mat-cell *matCellDef="let repo">{{ repo.lastCommitDate | date }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
       <!-- Row shown when there is no matching data. -->
       <tr class="mat-row" *matNoDataRow>
@@ -92,65 +102,69 @@ import { MatToolbarModule } from '@angular/material/toolbar';
       </tr>
     </table>
   `,
-  styles: [`
-  .title {
-    font-size: 1rem;
-  }
-    table { width: 100%; }
-    .security-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .security-buttons .mdc-button {
-      padding: 0 8px;
-      font-size: var(--mat-sys-body-small);
-      height: 16px;
-      white-space: nowrap;
-    }
-    .version-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px;
-    }
-    .version-pill {
-      font-size: 10px;
-      line-height: normal;
-      padding: 2px 6px;
-      border-radius: 12px;
-      background: #e0e0e0;
-      white-space: nowrap;
-    }
-    .mat-mdc-header-row {
-      opacity: .7;
-      font-size: .75em;
-    }
-    .mat-mdc-form-field {
-      width: 100%;
-      font-size: 14px;
-    }
-    .mat-mdc-table-sticky {
-      background: #fff;
-      opacity: 1;
-    }
-    .link {
-      color: var(--mat-table-row-item-label-text-color, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
-      text-decoration: none;
-      font-weight: 500;
-
-      &:hover {
-        text-decoration: underline;
+  styles: [
+    `
+      .title {
+        font-size: 1rem;
       }
-    }
+      table {
+        background: #fff;
+        width: 100%;
+      }
+      .security-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .security-buttons .mdc-button {
+        padding: 0 8px;
+        font-size: var(--mat-sys-body-small);
+        height: 16px;
+        white-space: nowrap;
+      }
+      .version-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+      }
+      .version-pill {
+        font-size: 10px;
+        line-height: normal;
+        padding: 2px 6px;
+        border-radius: 12px;
+        background: #e0e0e0;
+        white-space: nowrap;
+      }
+      .mat-mdc-header-row {
+        opacity: 0.7;
+        font-size: 0.75em;
+      }
+      .mat-mdc-row:hover {
+        background: var(--mat-sys-surface);
+      }
+      .mat-mdc-form-field {
+        width: 100%;
+        font-size: 14px;
+      }
+      .link {
+        color: var(--mat-table-row-item-label-text-color, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
+        text-decoration: none;
+        font-weight: 500;
 
-    .error {
-      color: var(--mat-sys-error);
-    }
-    .warning {
-      // darker orange
-      color: #f57c00;
-    }
-  `]
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .error {
+        color: var(--mat-sys-error);
+      }
+      .warning {
+        // darker orange
+        color: #f57c00;
+      }
+    `,
+  ],
 })
 export class ReposComponent {
   readonly repos = signal<RepoInfo[]>([]);
@@ -238,6 +252,6 @@ export class ReposComponent {
   }
 
   getPackageVersions(repo: RepoInfo): string[] {
-    return Object.entries(repo.packageVersions).map(([pkg, version]) => `${pkg}:${version}`);
+    return Object.entries(repo.packageVersions).map(([pkg, version]) => `${pkg}:${version.short}`);
   }
 }

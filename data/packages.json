@@ -1,13 +1,13 @@
-{
-  "@angular/core": "Angular",
-  "react": "React",
-  "vue": "Vue",
-  "svelte": "Svelte",
-  "lit": "Lit",
-  "typescript": "TypeScript",
-  "@azure/functions": "Functions",
-  "langchain": "LangChain.js",
-  "fastify": "Fastify",
-  "@azure/static-web-apps-cli": "SWA-CLI",
-  "typechat": "TypeChat"
-}
+[
+  "@angular/core",
+  "react",
+  "vue",
+  "svelte",
+  "lit",
+  "typescript",
+  "@azure/functions",
+  "langchain",
+  "fastify",
+  "@azure/static-web-apps-cli",
+  "typechat"
+]

@@ -29,7 +29,14 @@ export interface RepoInfo {
     secretScanning?: number;
   };
   lastCommitDate: string;
-  packageVersions: Record<string, string>;
+  packageVersions: Record<string, VersionInfo>;
+}
+
+export interface VersionInfo {
+  short: string;
+  current: string;
+  latest: string;
+  foundInPath: string;
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,13 +49,19 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 const parseRepoUrl = (repoUrl: string) => repoUrl.replace('https://github.com/', '').split('/');
 
+async function getLatestVersion(packageName: string): Promise<string> {
+  const response = await fetch(`https://registry.npmjs.org/${packageName}/latest`);
+  const data = await response.json();
+  return data.version;
+}
+
 async function getPackageVersions(repoUrl: string) {
   const [owner, repo] = parseRepoUrl(repoUrl);
   const watchedPackages = JSON.parse(readFileSync(PACKAGES_FILE, 'utf8'));
   const q = `filename:package.json repo:${owner}/${repo}`;
   const packageFiles = await octokit.rest.search.code({ q });
 
-  const versions = await Promise.all(
+  const versions: Record<string, Partial<VersionInfo>>[] = await Promise.all(
     packageFiles.data.items.map(async (file) => {
       const content = await octokit.rest.repos.getContent({
         owner,
@@ -68,12 +81,14 @@ async function getPackageVersions(repoUrl: string) {
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
         
         return Object.entries(deps)
-          .filter(([name]) => name in watchedPackages)
+          .filter(([name]) => watchedPackages.includes(name))
           .reduce((acc, [name, version]) => {
-            const displayName = watchedPackages[name as keyof typeof watchedPackages];
             const coercedVersion = semver.coerce(version);
-            if (!acc[displayName] || semver.lt(coercedVersion, acc[displayName])) {
-              acc[displayName] = coercedVersion;
+            if (!acc[name] || semver.lt(coercedVersion, acc[name]?.current)) {
+              acc[name] = {
+                current: coercedVersion?.version || undefined,
+                foundInPath: file.path,
+              };
             }
             return acc;
           }, {});
@@ -87,30 +102,47 @@ async function getPackageVersions(repoUrl: string) {
   // Merge all found versions, taking the lowest occurrence of each package
   const mergedVersions = versions.reduce((acc, curr) => {
     Object.entries(curr).forEach(([name, version]) => {
-      const coercedVersion = semver.coerce(version);
-      if (!acc[name] || semver.lt(coercedVersion, acc[name])) {
-        acc[name] = coercedVersion;
+      const coercedVersion = semver.coerce(version.current);
+      if (!acc[name] || semver.lt(coercedVersion, acc[name]?.current ?? '0.0.0')) {
+        acc[name] = version;
       }
     });
     return acc;
   }, {});
 
   // Prettify the versions
-  const prettifiedVersions = Object.entries(mergedVersions).reduce((acc, [name, version]) => {
-    const coercedVersion = semver.coerce(version);
+  const prettifiedVersions: Record<string, Partial<VersionInfo>> = Object.entries(mergedVersions).reduce((acc, [name, version]) => {
+    const coercedVersion = semver.coerce(version.current);
+    acc[name] = { ...version };
     if (coercedVersion) {
       if (coercedVersion.major > 0) {
-        acc[name] = `${coercedVersion.major}`;
+        acc[name].short = `${coercedVersion.major}`;
       } else if (coercedVersion.minor > 0) {
-        acc[name] = `${coercedVersion.major}.${coercedVersion.minor}`;
+        acc[name].short = `${coercedVersion.major}.${coercedVersion.minor}`;
       } else {
-        acc[name] = `${coercedVersion.major}.${coercedVersion.minor}.${coercedVersion.patch}`;
+        acc[name].short = `${coercedVersion.major}.${coercedVersion.minor}.${coercedVersion.patch}`;
       }
+    } else {
+      acc[name].short = '*';
     }
     return acc;
   }, {});
 
-  return prettifiedVersions;
+  // Fetch the latest version for each package
+  const packages = Object.keys(prettifiedVersions);
+  const uniquePackages = [...new Set(packages)];
+  const latestVersions = await Promise.all(uniquePackages.map(getLatestVersion));
+  const latestVersionsMap = uniquePackages.reduce((acc, name, index) => {
+    acc[name] = latestVersions[index];
+    return acc;
+  }, {});
+
+  const finalVersions: Record<string, VersionInfo> = Object.entries(prettifiedVersions).reduce((acc, [name, version]) => {
+    acc[name] = { ...version, latest: latestVersionsMap[name] };
+    return acc;
+  }, {});
+
+  return finalVersions;
 }
 
 async function getRepoInfo(repoUrl: string): Promise<RepoInfo> {
