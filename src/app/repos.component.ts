@@ -26,84 +26,99 @@ import { MatToolbarModule } from '@angular/material/toolbar';
       <input matInput (keyup)="applyFilter($event)" placeholder="Partial repo or package name..." #input />
       <span matTextSuffix>Repositories: {{ filteredReposCount() }}</span>
     </mat-form-field>
+    <div class="scrollable">
+      <table class="repos" mat-table [dataSource]="dataSource" matSort>
+        <ng-container matColumnDef="name" sticky="true">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
+          <td mat-cell *matCellDef="let repo">
+            <a class="link" [href]="getBaseUrl(repo)" target="_blank">{{ repo.name }}</a>
+          </td>
+        </ng-container>
 
-    <table class="repos" mat-table [dataSource]="dataSource" matSort>
-      <ng-container matColumnDef="name" sticky="true">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
-        <td mat-cell *matCellDef="let repo">
-          <a class="link" [href]="getBaseUrl(repo)" target="_blank">{{ repo.name }}</a>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="openIssues">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Issues</th>
+          <td mat-cell *matCellDef="let repo">
+            <a class="link" [href]="getIssuesUrl(repo)" target="_blank">{{ repo.openIssues }}</a>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="openIssues">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Issues</th>
-        <td mat-cell *matCellDef="let repo">
-          <a class="link" [href]="getIssuesUrl(repo)" target="_blank">{{ repo.openIssues }}</a>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="openPRs">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>PRs</th>
+          <td mat-cell *matCellDef="let repo">
+            <a class="link" [href]="getPullRequestsUrl(repo)" target="_blank">{{ repo.openPullRequests }}</a>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="openPRs">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>PRs</th>
-        <td mat-cell *matCellDef="let repo">
-          <a class="link" [href]="getPullRequestsUrl(repo)" target="_blank">{{ repo.openPullRequests }}</a>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="securityIssues">
+          <th mat-header-cell *matHeaderCellDef>Security</th>
+          <td mat-cell *matCellDef="let repo">
+            <div class="security-buttons">
+              <a
+                class="link"
+                [href]="getAdvisoriesUrl(repo)"
+                target="_blank"
+                *ngIf="repo.securityAlerts.advisories > 0"
+              >
+                Advisories: {{ repo.securityAlerts.advisories }}
+              </a>
+              <a
+                class="link"
+                [href]="getDependabotUrl(repo)"
+                target="_blank"
+                *ngIf="repo.securityAlerts.dependabot > 0"
+              >
+                Dependabot: {{ repo.securityAlerts.dependabot }}
+              </a>
+              <a
+                class="link warning"
+                [href]="getCodeScanningUrl(repo)"
+                target="_blank"
+                *ngIf="repo.securityAlerts.codeScanning > 0"
+              >
+                Code: {{ repo.securityAlerts.codeScanning }}
+              </a>
+              <a
+                class="link error"
+                [href]="getSecretScanningUrl(repo)"
+                target="_blank"
+                *ngIf="repo.securityAlerts.secretScanning > 0"
+              >
+                Secret: {{ repo.securityAlerts.secretScanning }}
+              </a>
+            </div>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="securityIssues">
-        <th mat-header-cell *matHeaderCellDef>Security</th>
-        <td mat-cell *matCellDef="let repo">
-          <div class="security-buttons">
-            <a class="link" [href]="getAdvisoriesUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.advisories > 0">
-              Advisories: {{ repo.securityAlerts.advisories }}
-            </a>
-            <a class="link" [href]="getDependabotUrl(repo)" target="_blank" *ngIf="repo.securityAlerts.dependabot > 0">
-              Dependabot: {{ repo.securityAlerts.dependabot }}
-            </a>
-            <a
-              class="link warning"
-              [href]="getCodeScanningUrl(repo)"
-              target="_blank"
-              *ngIf="repo.securityAlerts.codeScanning > 0"
-            >
-              Code: {{ repo.securityAlerts.codeScanning }}
-            </a>
-            <a
-              class="link error"
-              [href]="getSecretScanningUrl(repo)"
-              target="_blank"
-              *ngIf="repo.securityAlerts.secretScanning > 0"
-            >
-              Secret: {{ repo.securityAlerts.secretScanning }}
-            </a>
-          </div>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="versions">
+          <th mat-header-cell *matHeaderCellDef>Versions</th>
+          <td mat-cell *matCellDef="let repo">
+            <div class="version-pills">
+              <span *ngFor="let version of getPackageVersions(repo)" class="version-pill">{{ version }}</span>
+            </div>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="versions">
-        <th mat-header-cell *matHeaderCellDef>Versions</th>
-        <td mat-cell *matCellDef="let repo">
-          <div class="version-pills">
-            <span *ngFor="let version of getPackageVersions(repo)" class="version-pill">{{ version }}</span>
-          </div>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="lastCommitDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Commit</th>
+          <td mat-cell *matCellDef="let repo">{{ repo.lastCommitDate | date }}</td>
+        </ng-container>
 
-      <ng-container matColumnDef="lastCommitDate">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Commit</th>
-        <td mat-cell *matCellDef="let repo">{{ repo.lastCommitDate | date }}</td>
-      </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-      <!-- Row shown when there is no matching data. -->
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="6">No repository to show.</td>
-      </tr>
-    </table>
+        <!-- Row shown when there is no matching data. -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="6">No repository to show.</td>
+        </tr>
+      </table>
+    </div>
   `,
   styles: [
     `
+      .scrollable {
+        width: 100%;
+        overflow: auto;
+      }
       .title {
         font-size: 1rem;
       }
