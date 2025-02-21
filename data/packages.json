@@ -9,5 +9,6 @@
   "langchain",
   "fastify",
   "@azure/static-web-apps-cli",
-  "typechat"
+  "typechat",
+  "openai"
 ]
