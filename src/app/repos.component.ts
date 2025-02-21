@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { RepoInfo, ReposService } from './repos.service';
 
@@ -20,6 +21,7 @@ import { RepoInfo, ReposService } from './repos.service';
     MatInputModule,
     MatSortModule,
     MatToolbarModule,
+    MatTooltipModule,
     MatMenuModule,
   ],
   template: `
@@ -33,6 +35,9 @@ import { RepoInfo, ReposService } from './repos.service';
         <ng-container matColumnDef="name" sticky="true">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Repository</th>
           <td mat-cell *matCellDef="let repo">
+            <a mat-icon-button [href]="getCodespacesUrl(repo)" target="_blank" matTooltip="Open in Codespaces">
+              <img src="images/codespaces.svg" alt="Open in Codespaces" />
+            </a>
             <a class="link" [href]="getBaseUrl(repo)" target="_blank">{{ repo.name }}</a>
           </td>
         </ng-container>
@@ -197,7 +202,7 @@ import { RepoInfo, ReposService } from './repos.service';
           background: #bdbdbd;
         }
       }
-      ::ng-deep .versions-panel {
+      ::ng-deep .mat-mdc-menu-panel.versions-panel {
         background: #fff;
         padding: 10px;
 
@@ -211,6 +216,9 @@ import { RepoInfo, ReposService } from './repos.service';
             font-weight: 400;
           }
         }
+      }
+      .mdc-icon-button {
+        vertical-align: middle;
       }
       .mat-mdc-header-row {
         opacity: 0.7;
@@ -299,6 +307,10 @@ export class ReposComponent {
 
   getFilePath(repo: RepoInfo, path: string): string {
     return `${this.getBaseUrl(repo)}/blob/${repo.defaultBranch ?? 'main'}/${path}`;
+  }
+
+  getCodespacesUrl(repo: RepoInfo): string {
+    return `https://codespaces.new/${repo.name}?hide_repo_select=true&ref=${repo.defaultBranch ?? 'main'}&quickstart=true`;
   }
 
   getIssuesUrl(repo: RepoInfo): string {
