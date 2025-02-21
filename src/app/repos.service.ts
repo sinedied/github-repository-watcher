@@ -3,6 +3,7 @@ import { config } from './config';
 
 export interface RepoInfo {
   name: string;
+  defaultBranch: string;
   description: string;
   topics: string[];
   languages: string[];

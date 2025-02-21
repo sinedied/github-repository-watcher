@@ -15,6 +15,7 @@ dotenv.config({ override: true });
 
 export interface RepoInfo {
   name: string;
+  defaultBranch: string;
   description: string;
   topics: string[];
   languages: string[];
@@ -161,6 +162,7 @@ async function getRepoInfo(repoUrl: string): Promise<RepoInfo> {
 
   return {
     name: repoData.data.full_name,
+    defaultBranch: repoData.data.default_branch,
     description: repoData.data.description ?? '',
     topics: repoData.data.topics ?? [],
     languages: Object.keys(languages.data),
