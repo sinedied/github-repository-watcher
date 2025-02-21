@@ -33,10 +33,11 @@ export interface VersionInfo {
 })
 export class ReposService {
 
-  async getRepoInfos(): Promise<RepoInfo[]> {
+  async getRepoInfos(url?: string): Promise<RepoInfo[]> {
     // Avoid cache
     const randomString = Math.random().toString(36).substring(2, 15);
-    const response = await fetch(`${config.repoDataUrl}?${randomString}`);
+    const reposUrl = `${url || config.repoDataUrl}?${randomString}`;
+    const response = await fetch(reposUrl);
     const repos: RepoInfo[] = await response.json();
     return repos.map(repo => ({
       ...repo,

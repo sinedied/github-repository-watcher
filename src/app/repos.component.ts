@@ -259,7 +259,8 @@ export class ReposComponent implements OnInit {
     this.dataSource = new MatTableDataSource<RepoInfo>([]);
     this.dataSource.sortingDataAccessor = this.getSortingValue.bind(this);
     this.dataSource.filterPredicate = this.filterPredicate.bind(this);
-    this.loadRepos();
+    const params = this.route.snapshot.queryParams;
+    this.loadRepos(params['repos']);
   }
 
   ngOnInit(): void {
@@ -300,8 +301,8 @@ export class ReposComponent implements OnInit {
     return searchStr.includes(transformedFilter) || packageVersionsStr.includes(transformedFilter);
   }
 
-  async loadRepos() {
-    const repoData = await this.reposService.getRepoInfos();
+  async loadRepos(url?: string) {
+    const repoData = await this.reposService.getRepoInfos(url);
     this.repos.set(repoData);
     this.dataSource.data = repoData;
     this.dataSource.sort = this.sort;
@@ -369,7 +370,6 @@ export class ReposComponent implements OnInit {
   getPackageVersions(repo: RepoInfo) {
     return (
       Object.entries(repo.packageVersions)
-        // .map(([pkg, version]) => `${pkg}:${version.short}`);
         .map(([pkg, version]) => ({
           ...version,
           name: pkg,
