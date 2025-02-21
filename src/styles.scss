@@ -26,6 +26,29 @@ body {
   font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
+// Global styles
+// --------------------------------------------------
+
+.link {
+  color: var(--mat-table-row-item-label-text-color, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.link-primary {
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 // Helpers
 // --------------------------------------------------
 
