@@ -5,8 +5,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { RepoInfo, ReposService } from './repos.service';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
+import { RepoInfo, ReposService } from './repos.service';
 
 @Component({
   standalone: true,
@@ -19,6 +20,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatInputModule,
     MatSortModule,
     MatToolbarModule,
+    MatMenuModule,
   ],
   template: `
     <mat-form-field class="disable-bottom-line" subscriptSizing="dynamic">
@@ -50,7 +52,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         </ng-container>
 
         <ng-container matColumnDef="securityIssues">
-          <th mat-header-cell *matHeaderCellDef>Security</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Security</th>
           <td mat-cell *matCellDef="let repo">
             <div class="security-buttons">
               <a
@@ -93,7 +95,16 @@ import { MatToolbarModule } from '@angular/material/toolbar';
           <th mat-header-cell *matHeaderCellDef>Versions</th>
           <td mat-cell *matCellDef="let repo">
             <div class="version-pills">
-              <span *ngFor="let version of getPackageVersions(repo)" class="version-pill">{{ version }}</span>
+              @for (pkg of getPackageVersions(repo); track pkg.name) {
+                <span
+                  mat-button
+                  #versionMenuTrigger="matMenuTrigger"
+                  [matMenuTriggerFor]="versionMenu"
+                  [matMenuTriggerData]="{ pkg, repo }"
+                  class="version-pill"
+                  >{{ pkg.name }}:{{ pkg.short }}</span
+                >
+              }
             </div>
           </td>
         </ng-container>
@@ -111,6 +122,37 @@ import { MatToolbarModule } from '@angular/material/toolbar';
           <td class="mat-cell" colspan="6">No repository to show.</td>
         </tr>
       </table>
+
+      <mat-menu #versionMenu="matMenu" class="versions-panel">
+        <ng-template matMenuContent let-pkg="pkg" let-repo="repo">
+          <table class="versions-table">
+            <tr>
+              <td>Package</td>
+              <td>
+                <a class="link-primary" href="https://www.npmjs.com/package/{{ pkg.name }}" target="_blank">{{
+                  pkg.name
+                }}</a>
+              </td>
+            </tr>
+            <tr>
+              <td>Current</td>
+              <td>{{ pkg.current }}</td>
+            </tr>
+            <tr>
+              <td>Latest</td>
+              <td>{{ pkg.latest }}</td>
+            </tr>
+            <tr>
+              <td>Found in</td>
+              <td>
+                <a class="link-primary" [href]="getFilePath(repo, pkg.foundInPath)" target="_blank">{{
+                  pkg.foundInPath
+                }}</a>
+              </td>
+            </tr>
+          </table>
+        </ng-template>
+      </mat-menu>
     </div>
   `,
   styles: [
@@ -149,6 +191,26 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         border-radius: 12px;
         background: #e0e0e0;
         white-space: nowrap;
+        cursor: pointer;
+
+        &:hover {
+          background: #bdbdbd;
+        }
+      }
+      ::ng-deep .versions-panel {
+        background: #fff;
+        padding: 10px;
+
+        .mat-mdc-menu-content {
+          padding: 0;
+        }
+
+        .versions-table {
+          td:nth-child(2) {
+            padding-left: 10px;
+            font-weight: 400;
+          }
+        }
       }
       .mat-mdc-header-row {
         opacity: 0.7;
@@ -161,16 +223,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         width: 100%;
         font-size: 14px;
       }
-      .link {
-        color: var(--mat-table-row-item-label-text-color, var(--mat-sys-on-surface, rgba(0, 0, 0, 0.87)));
-        text-decoration: none;
-        font-weight: 500;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-
       .error {
         color: var(--mat-sys-error);
       }
@@ -204,6 +256,13 @@ export class ReposComponent {
         return repo.openPullRequests;
       case 'lastCommitDate':
         return new Date(repo.lastCommitDate).getTime();
+      case 'securityIssues':
+        return (
+          repo.securityAlerts.advisories +
+          (repo.securityAlerts.dependabot === 'disabled' ? 0 : repo.securityAlerts.dependabot) +
+          (repo.securityAlerts.codeScanning === 'disabled' ? 0 : repo.securityAlerts.codeScanning) +
+          (repo.securityAlerts.secretScanning === 'disabled' ? 0 : repo.securityAlerts.secretScanning)
+        );
       default:
         return (repo as any)[columnDef];
     }
@@ -238,6 +297,10 @@ export class ReposComponent {
     return `https://github.com/${repo.name}`;
   }
 
+  getFilePath(repo: RepoInfo, path: string): string {
+    return `${this.getBaseUrl(repo)}/blob/${repo.defaultBranch ?? 'main'}/${path}`;
+  }
+
   getIssuesUrl(repo: RepoInfo): string {
     return `${this.getBaseUrl(repo)}/issues`;
   }
@@ -266,7 +329,14 @@ export class ReposComponent {
     return `${this.getBaseSecurityUrl(repo)}/secret-scanning`;
   }
 
-  getPackageVersions(repo: RepoInfo): string[] {
-    return Object.entries(repo.packageVersions).map(([pkg, version]) => `${pkg}:${version.short}`);
+  getPackageVersions(repo: RepoInfo) {
+    return (
+      Object.entries(repo.packageVersions)
+        // .map(([pkg, version]) => `${pkg}:${version.short}`);
+        .map(([pkg, version]) => ({
+          ...version,
+          name: pkg,
+        }))
+    );
   }
 }
