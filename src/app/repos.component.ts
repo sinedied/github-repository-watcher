@@ -1,4 +1,4 @@
-import { Component, signal, ViewChild } from '@angular/core';
+import { Component, signal, ViewChild, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { RepoInfo, ReposService } from './repos.service';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -27,7 +28,7 @@ import { RepoInfo, ReposService } from './repos.service';
   template: `
     <mat-form-field class="disable-bottom-line" subscriptSizing="dynamic">
       <mat-label>Filter repositories</mat-label>
-      <input matInput (keyup)="applyFilter($event)" placeholder="Partial repo or package name..." #input />
+      <input matInput [value]="filterValue()" (input)="applyFilter($event)" placeholder="Partial repo or package name..." #input />
       <span matTextSuffix>Repositories: {{ filteredReposCount() }}</span>
     </mat-form-field>
     <div class="scrollable">
@@ -241,19 +242,35 @@ import { RepoInfo, ReposService } from './repos.service';
     `,
   ],
 })
-export class ReposComponent {
+export class ReposComponent implements OnInit {
   readonly repos = signal<RepoInfo[]>([]);
   readonly filteredReposCount = signal<number>(0);
   readonly displayedColumns = ['name', 'openIssues', 'openPRs', 'securityIssues', 'versions', 'lastCommitDate'];
   dataSource: MatTableDataSource<RepoInfo>;
+  readonly filterValue = signal<string>('');
 
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private reposService: ReposService) {
+  constructor(
+    private reposService: ReposService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.dataSource = new MatTableDataSource<RepoInfo>([]);
     this.dataSource.sortingDataAccessor = this.getSortingValue.bind(this);
     this.dataSource.filterPredicate = this.filterPredicate.bind(this);
     this.loadRepos();
+  }
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe((params: Params) => {
+      if (params['filter']) {
+        const filterValue = params['filter'];
+        this.filterValue.set(filterValue);
+        this.dataSource.filter = filterValue.trim().toLowerCase();
+        this.filteredReposCount.set(this.dataSource.filteredData.length);
+      }
+    });
   }
 
   private getSortingValue(repo: RepoInfo, columnDef: string): string | number {
@@ -297,8 +314,16 @@ export class ReposComponent {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
+    this.filterValue.set(filterValue);
     this.dataSource.filter = filterValue.trim().toLowerCase();
-    this.filteredReposCount.set(this.dataSource.filteredData.length);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        filter: filterValue,
+      },
+      queryParamsHandling: 'merge',
+    });
   }
 
   getBaseUrl(repo: RepoInfo): string {
