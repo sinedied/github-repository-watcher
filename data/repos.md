@@ -27,7 +27,7 @@ https://github.com/Azure-Samples/nodejs-microservices
 https://github.com/Azure-Samples/copilot-nodejs-todo
 
 
-## Outdated samples
+## Inactive/outdated samples
 https://github.com/Azure-Samples/contoso-real-estate
 https://github.com/Azure-Samples/azure-openai-chat-frontend
 
